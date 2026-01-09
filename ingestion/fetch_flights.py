@@ -1,3 +1,7 @@
+# TODO: use pydantic or python-decouple for env variables
+# TODO: refactor code to use main function
+# TODO: add ingestion time to data
+
 import requests
 import os
 import json
@@ -19,7 +23,7 @@ logging.basicConfig(
     datefmt='%Y-%m-%d %H:%M',
 )
 
-API_KEY = os.getenv['FLIGHTS_API_KEY']
+API_KEY = os.environ['FLIGHTS_API_KEY']
 BASE_URL = 'https://api.aviationstack.com/v1/flights'
 
 params = {
