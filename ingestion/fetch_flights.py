@@ -63,7 +63,7 @@ def fetch_flight_data():
     else:
         logging.info("Successfully fetched data.")
         return data
-        
+
     finally:
         logging.info(f"API request attempt finished.")
 
@@ -85,10 +85,11 @@ def save_raw_flights(data):
     except (TypeError, PermissionError, OSError) as e:
         logging.error(f"Failed to create output directory. {e}")
 
+    filename = f'{timestamp.strftime("%Y%m%d%H%M%S")}_flights.json'
+    full_path = output_dir / filename
+
     try:
-        with open(
-            output_dir / f'{timestamp.strftime("%Y%m%d%H%M%S")}_flights.json', "w"
-        ) as f:
+        with open(full_path, "w") as f:
             json.dump(payload, f, indent=2)
 
     except (PermissionError, OSError) as e:
@@ -100,10 +101,19 @@ def save_raw_flights(data):
     except KeyboardInterrupt as e:
         logging.error(f"Operation has been interrupted. {e}")
 
+    else:
+        logging.info(f"Successfully saved file to {full_path}")
+        return full_path
+
+
+def run_ingestion():
+    data = fetch_flight_data()
+    if data:
+        return save_raw_flights(data)
+    return None
 
 def main():
-    data = fetch_flight_data()
-    save_raw_flights(data)
+    run_ingestion()
 
 
 if __name__ == "__main__":
