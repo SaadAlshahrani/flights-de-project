@@ -1,12 +1,7 @@
-# TODO: refactor code to add logging and raise errors
-# TODO: don't forget to add timestamps to output files
-# TODO: figure out how to retrieve latest timestamped raw file
-
 import json
 import logging
 import pandas as pd
 from pathlib import Path
-from datetime import datetime, date
 
 logging.basicConfig(
     level=logging.INFO,
@@ -18,27 +13,33 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M",
 )
 
-today = date.today().isoformat()
 
+def load_raw_flights_data(raw_payload_path):
+    path_obj = Path(raw_payload_path)
+    filename = path_obj.stem
+    parent_directory = path_obj.parent.name
 
-def load_raw_flights_data(raw_data_path):
-    filename = Path(raw_data_path).stem
     try:
-        with open(raw_data_path, "r", encoding="utf-8") as f:
-            raw_data = json.load(f)
-        return raw_data, f"{filename}_transformed.csv"
+        with open(raw_payload_path, "r", encoding="utf-8") as f:
+            raw_payload = json.load(f)
+        return raw_payload, f"{filename}_transformed.csv", parent_directory
 
     except FileNotFoundError:
-        print(f"Error: File not found.")
+        logging.error(f"File not found.")
+        raise
 
     except json.JSONDecodeError:
-        print(f"Error: Failed to decode JSON from file.")
+        logging.error(f"Failed to decode JSON from file.")
+        raise
 
     except Exception as e:
-        print(f"An unexpected error occured. {e}")
+        logging.error(f"An unexpected error occured. {e}")
+        raise
 
 
-def transform_raw_flight_data(raw_data):
+def transform_raw_flight_data(raw_payload):
+    ingested_at = raw_payload.get("metadata", {}).get("ingested_at", {})
+    raw_data = raw_payload.get("data", {})
     flattened_data = pd.json_normalize(raw_data["data"])
 
     required_columns = [
@@ -80,25 +81,45 @@ def transform_raw_flight_data(raw_data):
         c.replace(".", "_") for c in transformed_data.columns
     ]
 
+    transformed_data["ingested_at"] = ingested_at
+
     return transformed_data
 
 
-def save_transformed_flights(transformed_data, filename):
-    output_dir = Path(f"data/transformed/flights/{today}")
-    output_dir.mkdir(parents=True, exist_ok=True)
-    full_path = output_dir / filename
-    transformed_data.to_csv(full_path, index=False)
+def save_transformed_flights(transformed_data, filename, parent_directory):
+    try:
+        # 1. Ensure directory exists
+        output_dir = Path(f"data/transformed/flights/{parent_directory}")
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        # 2. Save CSV file to directory.
+        full_path = output_dir / filename
+        transformed_data.to_csv(full_path, index=False)
+
+    except (TypeError, PermissionError, OSError) as e:
+        logging.error(f"Failed to create output directory. {e}")
+        raise        
+
+    except AttributeError as e:
+        logging.error(f"Tried to save a non-valid dataframe.")
+        raise
+
+    except Exception as e:
+        logging.error(f"An unexpected error occured. {e}")
+        raise
 
 
 def run_transformation(raw_data_path):
-    data, filename = load_raw_flights_data(raw_data_path)
+    data, filename, parent_directory = load_raw_flights_data(raw_data_path)
     transformed_data = transform_raw_flight_data(data)
-    save_transformed_flights(transformed_data, filename)
+    save_transformed_flights(transformed_data, filename, parent_directory)
+
 
 # I don't know what the hell to do with this
 def main():
-    raw_data_path = Path(f"data/raw/flights/{today}/flights.json")
-    
+    raw_data_path = Path("data/raw/flights/2026-01-12/20260112090759_flights.json")
+    run_transformation(raw_data_path)
+
 
 if __name__ == "__main__":
     main()
