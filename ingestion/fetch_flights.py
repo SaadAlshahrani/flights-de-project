@@ -1,5 +1,3 @@
-# TODO: use pydantic or python-decouple for env variables
-
 import requests
 import os
 import json
