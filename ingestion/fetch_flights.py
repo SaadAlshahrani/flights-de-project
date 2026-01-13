@@ -6,9 +6,7 @@ import json
 import logging
 from datetime import date, datetime
 from pathlib import Path
-from dotenv import load_dotenv
-
-load_dotenv()
+from decouple import config
 
 logging.basicConfig(
     level=logging.INFO,
@@ -20,7 +18,7 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M",
 )
 
-API_KEY = os.environ["FLIGHTS_API_KEY"]
+API_KEY = config("FLIGHTS_API_KEY")
 BASE_URL = "https://api.aviationstack.com/v1/flights"
 
 params = {"access_key": API_KEY, "dep_iata": "JED", "limit": 100}
