@@ -77,7 +77,7 @@ def transform_raw_flight_data(raw_payload):
     transformed_data = flattened_data[
         [c for c in required_columns if c in flattened_data.columns]
     ]
-    transformed_data.columns = transformed_data.columns = [
+    transformed_data.columns = [
         c.replace(".", "_") for c in transformed_data.columns
     ]
 
