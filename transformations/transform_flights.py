@@ -22,7 +22,7 @@ def load_raw_flights_data(raw_payload_path):
     try:
         with open(raw_payload_path, "r", encoding="utf-8") as f:
             raw_payload = json.load(f)
-        return raw_payload, f"{filename}_transformed.csv", parent_directory
+        return raw_payload, filename, parent_directory
 
     except FileNotFoundError:
         logging.error(f"File not found.")
@@ -92,9 +92,10 @@ def save_transformed_flights(transformed_data, filename, parent_directory):
         output_dir = Path(f"data/transformed/flights/{parent_directory}")
         output_dir.mkdir(parents=True, exist_ok=True)
 
-        # 2. Save CSV file to directory.
-        full_path = output_dir / filename
-        transformed_data.to_csv(full_path, index=False)
+        # 2. Save parquet file to directory.
+        filename_ext = f"{filename}_transformed.parquet"
+        full_path = output_dir / filename_ext
+        transformed_data.to_parquet(full_path, index=False)
 
     except (TypeError, PermissionError, OSError) as e:
         logging.error(f"Failed to create output directory. {e}")
@@ -117,7 +118,7 @@ def run_transformation(raw_data_path):
 
 # I don't know what the hell to do with this
 def main():
-    raw_data_path = Path("data/raw/flights/2026-01-12/20260112090759_flights.json")
+    raw_data_path = Path("data/raw/flights/2026-01-13/20260113101136_flights.json")
     run_transformation(raw_data_path)
 
 
