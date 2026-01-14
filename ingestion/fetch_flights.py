@@ -38,23 +38,29 @@ def fetch_flight_data():
 
     except requests.exceptions.Timeout:
         logging.error(f"Timeout error: The request to {BASE_URL} timed out.")
+        raise
 
     except requests.exceptions.ConnectionError:
         logging.error(
             f"Connection error: Could not connect to the server at {BASE_URL}. Check network connectin or URL."
         )
+        raise
 
     except requests.exceptions.HTTPError as e:
         logging.error(f"HTTP error: An HTTP error occured: {e}")
+        raise
 
     except requests.exceptions.RequestException as e:
         logging.error(f"Error: An unexpected error occured during the request: {e}")
+        raise
 
     except json.JSONDecodeError:
         logging.error(f"JSON Error: Failed to decode JSON from request body.")
+        raise
 
     except Exception as e:
         logging.error(f"Error: An unexpected error occured: {e}")
+        raise
 
     else:
         logging.info("Successfully fetched data.")
@@ -80,6 +86,7 @@ def save_raw_flights(data):
 
     except (TypeError, PermissionError, OSError) as e:
         logging.error(f"Failed to create output directory. {e}")
+        raise
 
     filename = f'{timestamp.strftime("%Y%m%d%H%M%S")}_flights.json'
     full_path = output_dir / filename
@@ -90,12 +97,15 @@ def save_raw_flights(data):
 
     except (PermissionError, OSError) as e:
         logging.error(f"Failed to create output file. {e}")
+        raise
 
     except TypeError as e:
         logging.error(f"Payload is not JSON serializable. {e}")
+        raise
 
     except KeyboardInterrupt as e:
         logging.error(f"Operation has been interrupted. {e}")
+        raise
 
     else:
         logging.info(f"Successfully saved file to {full_path}")
@@ -107,10 +117,3 @@ def run_ingestion():
     if data:
         return save_raw_flights(data)
     return None
-
-def main():
-    run_ingestion()
-
-
-if __name__ == "__main__":
-    main()
