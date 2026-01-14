@@ -1,8 +1,21 @@
+# Data
 data/
+
+# Virtual Environments
 env/
+
+# Environment Variables
 .env
+
+# Logs
 *.log
+
+# Jupyter/Notebooks
 notebooks/
+
+# Python
 __pycache__
 *.pyc
+
+# Build Artifacts
 *.egg-info/
