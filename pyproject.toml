@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "flights-data-pipeline"
+version = "0.1.0"
+description = "A data pipeline for ingesting and transforming flight data."
+readme = "README.md"
+
+authors = [
+    {name = "Saad Alshahrani"}
+]
+
+requires-python = ">=3.9"
+
+dependencies = [
+    "requests>=2.32",
+    "pandas>=2.0",
+    "pyarrow>=22.0", # Needed for parquet
+    "python-decouple>=3.8",
+    "prefect>=3.6"
+]
