@@ -13,6 +13,8 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M",
 )
 
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+DATA_DIR = PROJECT_ROOT / "data"
 
 def load_raw_flights_data(raw_payload_path):
     path_obj = Path(raw_payload_path)
@@ -89,7 +91,7 @@ def transform_raw_flight_data(raw_payload):
 def save_transformed_flights(transformed_data, filename, parent_directory):
     try:
         # 1. Ensure directory exists
-        output_dir = Path(f"data/transformed/flights/{parent_directory}")
+        output_dir = DATA_DIR / "transformed" / "flights" / parent_directory
         output_dir.mkdir(parents=True, exist_ok=True)
 
         # 2. Save parquet file to directory.

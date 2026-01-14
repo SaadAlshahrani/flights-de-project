@@ -16,6 +16,8 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M",
 )
 
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+DATA_DIR = PROJECT_ROOT / "data"
 API_KEY = config("FLIGHTS_API_KEY")
 BASE_URL = "https://api.aviationstack.com/v1/flights"
 
@@ -81,7 +83,7 @@ def save_raw_flights(data):
     }
 
     try:
-        output_dir = Path(f"data/raw/flights/{today}")
+        output_dir = DATA_DIR / "raw" / "flights" / today
         output_dir.mkdir(parents=True, exist_ok=True)
 
     except (TypeError, PermissionError, OSError) as e:
