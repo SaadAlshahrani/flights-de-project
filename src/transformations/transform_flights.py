@@ -114,13 +114,3 @@ def run_transformation(raw_data_path):
     data, filename, parent_directory = load_raw_flights_data(raw_data_path)
     transformed_data = transform_raw_flight_data(data)
     save_transformed_flights(transformed_data, filename, parent_directory)
-
-
-# I don't know what the hell to do with this
-def main():
-    raw_data_path = Path("data/raw/flights/2026-01-13/20260113101136_flights.json")
-    run_transformation(raw_data_path)
-
-
-if __name__ == "__main__":
-    main()
