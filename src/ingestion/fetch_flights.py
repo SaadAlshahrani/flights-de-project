@@ -5,6 +5,8 @@ from pathlib import Path
 from decouple import config
 from common.logger import setup_logger
 
+# Setup
+
 logger = setup_logger(__name__, "fetch_flights.log")
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent

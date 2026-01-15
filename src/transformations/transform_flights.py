@@ -32,8 +32,31 @@ def load_raw_flights_data(raw_payload_path):
 
 
 def transform_raw_flight_data(raw_payload):
-    ingested_at = raw_payload.get("metadata", {}).get("ingested_at", {})
-    raw_data = raw_payload.get("data", {})
+    # Basic validation
+    metadata = raw_payload.get("metadata")
+    if not isinstance(metadata, dict):
+        logger.error("Missing or invalid 'metadata' object.")
+        raise ValueError("Missing metadata.")
+    
+    ingested_at = metadata.get("ingested_at")
+    if not isinstance(ingested_at, str):
+        logger.error("Missing or invalid 'ingested_at' field.")
+        raise ValueError("Missing 'ingested_at' field.")
+    
+    raw_data = raw_payload.get("data")
+    if not isinstance(raw_data, dict):
+        logger.error("Missing or invalid 'data' section.")
+        raise ValueError("Missing 'data'.")
+    
+    records = raw_data.get("data")
+    if not isinstance(records, list):
+        logger.error("'data' field must be a list.")
+        raise TypeError("Not a list.")
+    
+    if not records:
+        logger.error("No flights records.")
+        raise ValueError("Empty records.")
+
     flattened_data = pd.json_normalize(raw_data["data"])
 
     required_columns = [
@@ -90,6 +113,7 @@ def save_transformed_flights(transformed_data, filename, parent_directory):
         filename_ext = f"{filename}_transformed.parquet"
         full_path = output_dir / filename_ext
         transformed_data.to_parquet(full_path, index=False)
+        logger.info("Successfully saved transformed data.")
 
     except (TypeError, PermissionError, OSError) as e:
         logger.error(f"Failed to create output directory. {e}")
