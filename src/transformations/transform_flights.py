@@ -1,17 +1,9 @@
 import json
-import logging
 import pandas as pd
 from pathlib import Path
+from common.logger import setup_logger
 
-logging.basicConfig(
-    level=logging.INFO,
-    filename="transform_flights.log",
-    filemode="a",
-    encoding="utf-8",
-    style="{",
-    format="{asctime} - {levelname} - {message}",
-    datefmt="%Y-%m-%d %H:%M",
-)
+logger = setup_logger(__name__, "transform_flights.log")
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 DATA_DIR = PROJECT_ROOT / "data"
@@ -27,15 +19,15 @@ def load_raw_flights_data(raw_payload_path):
         return raw_payload, filename, parent_directory
 
     except FileNotFoundError:
-        logging.error(f"File not found.")
+        logger.error(f"File not found.")
         raise
 
     except json.JSONDecodeError:
-        logging.error(f"Failed to decode JSON from file.")
+        logger.error(f"Failed to decode JSON from file.")
         raise
 
     except Exception as e:
-        logging.error(f"An unexpected error occured. {e}")
+        logger.error(f"An unexpected error occured. {e}")
         raise
 
 
@@ -100,15 +92,15 @@ def save_transformed_flights(transformed_data, filename, parent_directory):
         transformed_data.to_parquet(full_path, index=False)
 
     except (TypeError, PermissionError, OSError) as e:
-        logging.error(f"Failed to create output directory. {e}")
+        logger.error(f"Failed to create output directory. {e}")
         raise        
 
     except AttributeError as e:
-        logging.error(f"Tried to save a non-valid dataframe.")
+        logger.error(f"Tried to save a non-valid dataframe.")
         raise
 
     except Exception as e:
-        logging.error(f"An unexpected error occured. {e}")
+        logger.error(f"An unexpected error occured. {e}")
         raise
 
 
