@@ -1,16 +1,14 @@
 import requests
 import json
 from datetime import date, datetime
-from pathlib import Path
 from decouple import config
 from common.logger import setup_logger
+from common.storage import write_json
 
 # Setup
 
 logger = setup_logger(__name__, "fetch_flights.log")
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
-DATA_DIR = PROJECT_ROOT / "data"
 API_KEY = config("FLIGHTS_API_KEY")
 BASE_URL = "https://api.aviationstack.com/v1/flights"
 
@@ -65,7 +63,8 @@ def fetch_flight_data():
         logger.info(f"API request attempt finished.")
 
 
-def save_raw_flights(data):
+def save_raw_flights(data: dict) -> str:
+    # Preparing payload
     today = date.today().isoformat()
     timestamp = datetime.now()
     payload = {
@@ -75,36 +74,19 @@ def save_raw_flights(data):
         "data": data,
     }
 
-    try:
-        output_dir = DATA_DIR / "raw" / "flights" / today
-        output_dir.mkdir(parents=True, exist_ok=True)
-
-    except (TypeError, PermissionError, OSError) as e:
-        logger.error(f"Failed to create output directory. {e}")
-        raise
-
+    # Writing to storage
     filename = f'{timestamp.strftime("%Y%m%d%H%M%S")}_flights.json'
-    full_path = output_dir / filename
+    blob_path = f"raw/flights/ingestion_date={today}/{filename}"
 
     try:
-        with open(full_path, "w") as f:
-            json.dump(payload, f, indent=2)
+        write_json(blob_path, payload)
+        logger.info(f"Successfully written JSON data to {blob_path}.")
 
-    except (PermissionError, OSError) as e:
-        logger.error(f"Failed to create output file. {e}")
+    except Exception as e:
+        logger.error(f"Failed to persist data to cloud storage. {e}")
         raise
 
-    except TypeError as e:
-        logger.error(f"Payload is not JSON serializable. {e}")
-        raise
-
-    except KeyboardInterrupt as e:
-        logger.error(f"Operation has been interrupted. {e}")
-        raise
-
-    else:
-        logger.info(f"Successfully saved file to {full_path}")
-        return full_path
+    return blob_path
 
 
 def run_ingestion():

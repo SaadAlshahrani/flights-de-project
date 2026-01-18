@@ -2,32 +2,23 @@ import json
 import pandas as pd
 from pathlib import Path
 from common.logger import setup_logger
+from common.storage import load_json, write_parquet
 
 logger = setup_logger(__name__, "transform_flights.log")
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
-DATA_DIR = PROJECT_ROOT / "data"
 
-def load_raw_flights_data(raw_payload_path):
-    path_obj = Path(raw_payload_path)
+def load_raw_flights_data(raw_blob_path: str):
+    path_obj = Path(raw_blob_path)
     filename = path_obj.stem
     parent_directory = path_obj.parent.name
 
     try:
-        with open(raw_payload_path, "r", encoding="utf-8") as f:
-            raw_payload = json.load(f)
+        raw_payload = load_json(raw_blob_path)
+        logger.info("Successfully retrieved JSON from storage.")
         return raw_payload, filename, parent_directory
 
-    except FileNotFoundError:
-        logger.error(f"File not found.")
-        raise
-
-    except json.JSONDecodeError:
-        logger.error(f"Failed to decode JSON from file.")
-        raise
-
     except Exception as e:
-        logger.error(f"An unexpected error occured. {e}")
+        logger.error(f"Failed to load raw flights data from {raw_blob_path}. {e}")
         raise
 
 
@@ -98,33 +89,22 @@ def transform_raw_flight_data(raw_payload):
         c.replace(".", "_") for c in transformed_data.columns
     ]
 
-    transformed_data["ingested_at"] = ingested_at
+    transformed_data.loc[:, "ingested_at"] = ingested_at
 
     return transformed_data
 
 
 def save_transformed_flights(transformed_data, filename, parent_directory):
     try:
-        # 1. Ensure directory exists
-        output_dir = DATA_DIR / "transformed" / "flights" / parent_directory
-        output_dir.mkdir(parents=True, exist_ok=True)
 
         # 2. Save parquet file to directory.
         filename_ext = f"{filename}_transformed.parquet"
-        full_path = output_dir / filename_ext
-        transformed_data.to_parquet(full_path, index=False)
-        logger.info("Successfully saved transformed data.")
-
-    except (TypeError, PermissionError, OSError) as e:
-        logger.error(f"Failed to create output directory. {e}")
-        raise        
-
-    except AttributeError as e:
-        logger.error(f"Tried to save a non-valid dataframe.")
-        raise
+        blob_path = f"transformed/flights/{parent_directory}/{filename_ext}"
+        write_parquet(blob_path, transformed_data)
+        logger.info(f"Successfully written transformed data to {blob_path}.")
 
     except Exception as e:
-        logger.error(f"An unexpected error occured. {e}")
+        logger.error(f"Could not save transformed data to {blob_path}. {e}")
         raise
 
 
