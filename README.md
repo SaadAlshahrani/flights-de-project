@@ -128,7 +128,7 @@ This repository can also serve as a template to create pipelines with other purp
 22. Create Cron Cloud Scheduler Job:
 
     ```
-    gcloud scheduler jobs create http flights-pipeline-schedule --schedule="0 12 * * *" --uri="https://me-central1-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/<PROJECT_ID>/jobs/flights-pipeline-job" --http-method=POST --oauth-service-account-email="<SERVICE_ACCOUNT_EMAIL>" --location=us-central1
+    gcloud scheduler jobs create http flights-pipeline-schedule --schedule="0 12 * * *" --uri="https://me-central1-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/<PROJECT_ID>/jobs/flights-pipeline-job:run" --http-method=POST --oauth-service-account-email="<SERVICE_ACCOUNT_EMAIL>" --location=us-central1
     ```
 
 Please let me know if any issues are encountered in one of these steps.
